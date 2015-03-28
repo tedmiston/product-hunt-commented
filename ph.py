@@ -2,6 +2,7 @@
 
 import os
 import shelve
+import sys
 
 import requests
 
@@ -16,7 +17,10 @@ class ProductHunt(object):
     BASE_URL = 'https://api.producthunt.com/v1'
 
     def __init__(self):
-        self.DEV_TOKEN = os.environ['PRODUCT_HUNT_DEV_TOKEN']
+        try:
+            self.DEV_TOKEN = os.environ['PRODUCT_HUNT_DEV_TOKEN']
+        except:
+            sys.exit('Don\'t forget to store your dev token in the environment variable PRODUCT_HUNT_DEV_TOKEN.')
         self.headers = {'authorization': 'Bearer {}'.format(self.DEV_TOKEN)}
         self.shelve = shelve.open('my_comments')
         self.etag_comments = self.shelve.get('etag_comments')
