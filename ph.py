@@ -1,5 +1,6 @@
 """Print every comment you've made on Product Hunt."""
 
+from collections import namedtuple
 import os
 import shelve
 import sys
@@ -84,21 +85,9 @@ class ProductHunt(object):
                 comment_body=comment.body, idx=idx+1, post_title=comment.post_title)
 
 
-class User(object):
-    """A Product Hunt user."""
+User = namedtuple('User', ['user_id', 'username', 'full_name'])
 
-    def __init__(self, user_id, username, full_name):
-        self.user_id = user_id
-        self.username = username
-        self.full_name = full_name
-
-
-class Comment(object):
-    """A Product Hunt comment."""
-
-    def __init__(self, body, post_title):
-        self.body = body
-        self.post_title = post_title
+Comment = namedtuple('Comment', ['body', 'post_title'])
 
 
 def main():
