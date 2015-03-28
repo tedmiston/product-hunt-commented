@@ -59,10 +59,9 @@ class ProductHunt(object):
             self.etag_user = r.headers['etag']
             self.user = User(u['id'], u['username'], u['name'])
 
-    def fetch_my_comments(self):
-        """Retrieve all of my comments."""
-        self.fetch_me()
-        url = self._build_url('users/{}/comments'.format(self.user.user_id))
+    def fetch_user_comments(self, user_id):
+        """Retrieve all comments for a user."""        
+        url = self._build_url('users/{}/comments'.format(user_id))
         headers = {'If-None-Match': self.etag_comments}
         r = requests.get(url, headers=extend(self.headers, headers))
         if r.status_code == requests.codes.unauthorized:
@@ -70,6 +69,11 @@ class ProductHunt(object):
         elif r.status_code == requests.codes.ok:
             self.etag_comments = r.headers['etag']
             self.my_comments = [Comment(i['body'], i['post']['name']) for i in r.json()['comments']]
+
+    def fetch_my_comments(self):
+        """Retrieve all of my comments."""
+        self.fetch_me()
+        self.fetch_user_comments(self.user.user_id)
 
     def print_my_comments(self):
         print 'Comments for {full_name} #{user_id} (@{username})\n'.format(
