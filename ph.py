@@ -38,12 +38,23 @@ class ProductHunt(object):
     def _build_url(self, path):
         return '{}/{}'.format(self.BASE_URL, path)
 
+    def _exit_with_error(self, request):
+        if request.status_code == requests.codes.unauthorized:
+            short_message = 'Product Hunt auth token is invalid.'
+        else:
+            short_message = 'Unknown error'
+        long_message = request.json()['error_description']
+        error_message = 'Error: {}\n\n{}'.format(short_message, long_message)
+        sys.exit(error_message)
+
     def fetch_me(self):
         """Retrieve my user account details."""
         url = self._build_url('me')
         headers = {'If-None-Match': self.etag_user}
         r = requests.get(url, headers=extend(self.headers, headers))
-        if r.status_code == requests.codes.ok:
+        if r.status_code == requests.codes.unauthorized:
+            self._exit_with_error(r)
+        elif r.status_code == requests.codes.ok:
             u = r.json()['user']
             self.etag_user = r.headers['etag']
             self.user = User(u['id'], u['username'], u['name'])
@@ -54,7 +65,9 @@ class ProductHunt(object):
         url = self._build_url('users/{}/comments'.format(self.user.user_id))
         headers = {'If-None-Match': self.etag_comments}
         r = requests.get(url, headers=extend(self.headers, headers))
-        if r.status_code == requests.codes.ok:
+        if r.status_code == requests.codes.unauthorized:
+            self._exit_with_error(r)
+        elif r.status_code == requests.codes.ok:
             self.etag_comments = r.headers['etag']
             self.my_comments = [Comment(i['body'], i['post']['name']) for i in r.json()['comments']]
 
